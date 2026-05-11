@@ -14,19 +14,27 @@ const characters: { type: CharacterType; emoji: string; color: string }[] = [
   { type: "knight", emoji: "⚔️", color: "bg-[oklch(0.88_0.08_280)]" },
 ];
 
-export function Onboarding() {
+interface OnboardingProps {
+  onCancel?: () => void;
+}
+
+export function Onboarding({ onCancel }: OnboardingProps = {}) {
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [selectedCharacter, setSelectedCharacter] =
     useState<CharacterType | null>(null);
   const [showWelcome, setShowWelcome] = useState(false);
   const setUser = useAppStore((state) => state.setUser);
+  const profiles = useAppStore((state) => state.profiles);
+
+  const trimmedName = name.trim();
+  const nameTaken = profiles.some((p) => p.name === trimmedName);
 
   const handleStart = () => {
-    if (!name.trim() || !selectedCharacter) return;
+    if (!trimmedName || !selectedCharacter || nameTaken) return;
 
     setUser({
-      name: name.trim(),
+      name: trimmedName,
       character: selectedCharacter,
       level: 1,
       xp: 0,
@@ -98,7 +106,15 @@ export function Onboarding() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
-      <div className="flex items-center justify-center px-6 pb-4 pt-12">
+      <div className="relative flex items-center justify-center px-6 pb-4 pt-12">
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            className="absolute left-6 top-12 text-sm text-muted-foreground hover:text-foreground"
+          >
+            ← 뒤로
+          </button>
+        )}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -159,12 +175,17 @@ export function Onboarding() {
                   className="h-14 rounded-2xl border-2 border-border bg-card px-6 text-center text-lg shadow-sm focus:border-primary"
                   maxLength={10}
                 />
+                {nameTaken && (
+                  <p className="mt-2 text-center text-sm text-destructive">
+                    이미 사용 중인 별명이에요
+                  </p>
+                )}
               </div>
 
               <div className="mt-auto pb-8 pt-8">
                 <Button
                   onClick={() => setStep(2)}
-                  disabled={!name.trim()}
+                  disabled={!trimmedName || nameTaken}
                   className="h-14 w-full rounded-2xl bg-primary text-lg font-semibold text-primary-foreground shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
                 >
                   다음으로
