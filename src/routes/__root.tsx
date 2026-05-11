@@ -72,14 +72,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "성경 탐험대" },
+      { name: "description", content: "게으른 엄마의 성경읽기 어플" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "성경 탐험대" },
+      { property: "og:description", content: "게으른 엄마의 성경읽기 어플" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "성경 탐험대" },
+      { name: "twitter:description", content: "게으른 엄마의 성경읽기 어플" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/WMJZkFsj3TUI7QPSneBludel2yo1/social-images/social-1778470498496-ChatGPT_Image_2026년_5월_11일_오전_11_09_54.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/WMJZkFsj3TUI7QPSneBludel2yo1/social-images/social-1778470498496-ChatGPT_Image_2026년_5월_11일_오전_11_09_54.webp" },
     ],
     links: [
       {
