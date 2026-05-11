@@ -186,7 +186,7 @@ export function HomeScreen() {
               </div>
               </div>
               <a
-                href="https://www.bible.com/ko/bible/88/JHN.1.KRV"
+                href="https://www.bible.com/ko"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary font-semibold text-primary-foreground shadow-md transition-all hover:shadow-lg active:scale-[0.98]"
@@ -223,15 +223,12 @@ export function HomeScreen() {
             <div className="mb-1 flex items-center gap-2">
               <span className="text-2xl">📖</span>
               <span className="text-sm font-medium text-muted-foreground">
-                {formatDate()} · {dayOfYear}일차
+                {formatDate()}{dayOfYear > 0 ? ` · ${dayOfYear}일차` : ""}
               </span>
             </div>
             <h2 className="mb-1 text-2xl font-bold text-foreground">
               {todayReading.reference}
             </h2>
-            <p className="text-sm text-muted-foreground">
-              {todayReading.book} {todayReading.chapters}장
-            </p>
 
             <div className="mt-4 flex gap-3">
               <Button
