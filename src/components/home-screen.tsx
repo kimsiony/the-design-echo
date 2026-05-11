@@ -21,6 +21,8 @@ export function HomeScreen() {
   const [mounted, setMounted] = useState(false);
   const user = useAppStore((state) => state.user);
   const completeReading = useAppStore((state) => state.completeReading);
+  const logout = useAppStore((state) => state.logout);
+  const profiles = useAppStore((state) => state.profiles);
 
   const todayReading = getTodayReading();
   const dayOfYear = getDayOfYear();
@@ -143,6 +145,14 @@ export function HomeScreen() {
             </span>
           </div>
         </motion.div>
+        {profiles.length > 1 && (
+          <button
+            onClick={logout}
+            className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            👥 다른 친구로 바꾸기
+          </button>
+        )}
       </header>
 
       <main className="flex-1 space-y-4 px-5 py-4">
