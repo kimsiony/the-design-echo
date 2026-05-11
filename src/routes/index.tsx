@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { Onboarding } from "@/components/onboarding";
 import { HomeScreen } from "@/components/home-screen";
+import { ProfileSelect } from "@/components/profile-select";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,7 +21,9 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [mounted, setMounted] = useState(false);
-  const isOnboarded = useAppStore((state) => state.isOnboarded);
+  const [creatingNew, setCreatingNew] = useState(false);
+  const user = useAppStore((state) => state.user);
+  const profiles = useAppStore((state) => state.profiles);
 
   useEffect(() => {
     setMounted(true);
@@ -37,9 +40,19 @@ function Index() {
     );
   }
 
-  if (!isOnboarded) {
-    return <Onboarding />;
+  if (user) {
+    return <HomeScreen />;
   }
 
-  return <HomeScreen />;
+  if (profiles.length === 0 || creatingNew) {
+    return (
+      <Onboarding
+        onCancel={
+          profiles.length > 0 ? () => setCreatingNew(false) : undefined
+        }
+      />
+    );
+  }
+
+  return <ProfileSelect onCreateNew={() => setCreatingNew(true)} />;
 }
