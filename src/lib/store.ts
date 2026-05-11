@@ -11,37 +11,38 @@ export interface UserProfile {
   stars: number;
   streak: number;
   lastReadDate: string | null;
-  completedReadings: number[]; // Array of reading IDs
+  completedReadings: number[];
   unlockedItems: string[];
   createdAt: string;
 }
 
 export interface QuizResult {
+  profileName: string;
   readingId: number;
   score: number;
   date: string;
 }
 
 interface AppState {
-  // User data
+  profiles: UserProfile[];
+  currentProfileName: string | null;
   user: UserProfile | null;
   isOnboarded: boolean;
-  
-  // Quiz history
   quizResults: QuizResult[];
-  
-  // Actions
+
   setUser: (user: UserProfile) => void;
+  loginAs: (name: string) => void;
+  logout: () => void;
+  deleteProfile: (name: string) => void;
   updateUser: (updates: Partial<UserProfile>) => void;
   completeReading: (readingId: number) => void;
   addXP: (amount: number) => void;
   addStars: (amount: number) => void;
   unlockItem: (itemId: string) => void;
-  saveQuizResult: (result: QuizResult) => void;
+  saveQuizResult: (result: Omit<QuizResult, 'profileName'>) => void;
   resetProgress: () => void;
 }
 
-// XP required for each level
 export const XP_PER_LEVEL = 100;
 export const XP_PER_READING = 20;
 export const STARS_PER_READING = 5;
@@ -67,106 +68,124 @@ function isYesterday(dateString: string | null): boolean {
   return date.toDateString() === yesterday.toDateString();
 }
 
+function syncProfile(profiles: UserProfile[], updated: UserProfile): UserProfile[] {
+  const idx = profiles.findIndex((p) => p.name === updated.name);
+  if (idx === -1) return [...profiles, updated];
+  const next = [...profiles];
+  next[idx] = updated;
+  return next;
+}
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
+      profiles: [],
+      currentProfileName: null,
       user: null,
       isOnboarded: false,
       quizResults: [],
-      
-      setUser: (user) => set({ user, isOnboarded: true }),
-      
-      updateUser: (updates) => set((state) => ({
-        user: state.user ? { ...state.user, ...updates } : null
+
+      setUser: (user) => set((state) => ({
+        user,
+        currentProfileName: user.name,
+        isOnboarded: true,
+        profiles: syncProfile(state.profiles, user),
       })),
-      
+
+      loginAs: (name) => set((state) => {
+        const profile = state.profiles.find((p) => p.name === name);
+        if (!profile) return state;
+        return { user: profile, currentProfileName: name, isOnboarded: true };
+      }),
+
+      logout: () => set({ user: null, currentProfileName: null }),
+
+      deleteProfile: (name) => set((state) => {
+        const profiles = state.profiles.filter((p) => p.name !== name);
+        const isCurrent = state.currentProfileName === name;
+        return {
+          profiles,
+          user: isCurrent ? null : state.user,
+          currentProfileName: isCurrent ? null : state.currentProfileName,
+          quizResults: state.quizResults.filter((q) => q.profileName !== name),
+        };
+      }),
+
+      updateUser: (updates) => set((state) => {
+        if (!state.user) return state;
+        const updated = { ...state.user, ...updates };
+        return {
+          user: updated,
+          profiles: syncProfile(state.profiles, updated),
+        };
+      }),
+
       completeReading: (readingId) => set((state) => {
         if (!state.user) return state;
-        
-        // Check if already completed
-        if (state.user.completedReadings.includes(readingId)) {
-          return state;
-        }
-        
+        if (state.user.completedReadings.includes(readingId)) return state;
+
         const today = new Date().toISOString().split('T')[0];
         const lastRead = state.user.lastReadDate;
-        
-        // Calculate streak
+
         let newStreak = state.user.streak;
         if (isToday(lastRead)) {
-          // Already read today, no streak change
+          // no change
         } else if (isYesterday(lastRead)) {
-          // Consecutive day, increase streak
           newStreak += 1;
         } else {
-          // Streak broken, start new
           newStreak = 1;
         }
-        
-        // Calculate XP and stars
+
         let xpGain = XP_PER_READING;
         let starGain = STARS_PER_READING;
-        
-        // Streak bonus
         if (newStreak > 1) {
           xpGain += STREAK_BONUS_XP;
           starGain += STREAK_BONUS_STARS;
         }
-        
+
         const newXP = state.user.xp + xpGain;
-        const newLevel = calculateLevel(newXP);
-        
-        return {
-          user: {
-            ...state.user,
-            completedReadings: [...state.user.completedReadings, readingId],
-            xp: newXP,
-            level: newLevel,
-            stars: state.user.stars + starGain,
-            streak: newStreak,
-            lastReadDate: today,
-          }
+        const updated: UserProfile = {
+          ...state.user,
+          completedReadings: [...state.user.completedReadings, readingId],
+          xp: newXP,
+          level: calculateLevel(newXP),
+          stars: state.user.stars + starGain,
+          streak: newStreak,
+          lastReadDate: today,
         };
+        return { user: updated, profiles: syncProfile(state.profiles, updated) };
       }),
-      
+
       addXP: (amount) => set((state) => {
         if (!state.user) return state;
         const newXP = state.user.xp + amount;
-        return {
-          user: {
-            ...state.user,
-            xp: newXP,
-            level: calculateLevel(newXP),
-          }
-        };
+        const updated = { ...state.user, xp: newXP, level: calculateLevel(newXP) };
+        return { user: updated, profiles: syncProfile(state.profiles, updated) };
       }),
-      
+
       addStars: (amount) => set((state) => {
         if (!state.user) return state;
-        return {
-          user: {
-            ...state.user,
-            stars: state.user.stars + amount,
-          }
-        };
+        const updated = { ...state.user, stars: state.user.stars + amount };
+        return { user: updated, profiles: syncProfile(state.profiles, updated) };
       }),
-      
+
       unlockItem: (itemId) => set((state) => {
         if (!state.user) return state;
         if (state.user.unlockedItems.includes(itemId)) return state;
-        return {
-          user: {
-            ...state.user,
-            unlockedItems: [...state.user.unlockedItems, itemId],
-          }
-        };
+        const updated = { ...state.user, unlockedItems: [...state.user.unlockedItems, itemId] };
+        return { user: updated, profiles: syncProfile(state.profiles, updated) };
       }),
-      
+
       saveQuizResult: (result) => set((state) => ({
-        quizResults: [...state.quizResults, result]
+        quizResults: [
+          ...state.quizResults,
+          { ...result, profileName: state.currentProfileName ?? '' },
+        ],
       })),
-      
+
       resetProgress: () => set({
+        profiles: [],
+        currentProfileName: null,
         user: null,
         isOnboarded: false,
         quizResults: [],
@@ -174,11 +193,27 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'bible-adventure-storage',
+      version: 2,
+      migrate: (persisted: any, version) => {
+        if (!persisted) return persisted;
+        if (version < 2) {
+          const profiles: UserProfile[] = persisted.user ? [persisted.user] : [];
+          return {
+            ...persisted,
+            profiles,
+            currentProfileName: persisted.user?.name ?? null,
+            quizResults: (persisted.quizResults ?? []).map((q: any) => ({
+              ...q,
+              profileName: persisted.user?.name ?? '',
+            })),
+          };
+        }
+        return persisted;
+      },
     }
   )
 );
 
-// Character emoji mappings
 export const characterEmojis: Record<CharacterType, string> = {
   sheep: '🐑',
   lion: '🦁',
