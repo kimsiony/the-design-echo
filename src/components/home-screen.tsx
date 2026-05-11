@@ -184,6 +184,7 @@ export function HomeScreen() {
                   </div>
                 </div>
               </div>
+              </div>
               <a
                 href="https://www.bible.com/ko/bible/88/JHN.1.KRV"
                 target="_blank"
