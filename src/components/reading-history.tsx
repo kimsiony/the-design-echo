@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { getReadingByDate, getDayOfYear } from "@/lib/bible-schedule";
+import { getReadingByDate, getDayOfYear, getReadingById } from "@/lib/bible-schedule";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -219,11 +219,9 @@ export function ReadingHistory({ onBack }: ReadingHistoryProps) {
               .slice(-5)
               .reverse()
               .map((readingId) => {
-                const dayIndex = readingId - 1;
-                const startOfYear = new Date(new Date().getFullYear(), 0, 1);
-                const readDate = new Date(startOfYear);
-                readDate.setDate(startOfYear.getDate() + dayIndex);
-                const reading = getReadingByDate(readDate);
+                const reading = getReadingById(readingId);
+                if (!reading) return null;
+                const readDate = new Date(reading.date);
 
                 return (
                   <Card

@@ -59,7 +59,7 @@ export function ProfileSelect({ onCreateNew }: ProfileSelectProps) {
                   }
                 }
               }}
-              className="rounded-full px-2 py-1 text-xs text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-destructive hover:text-destructive"
               aria-label={`${p.name} 삭제`}
             >
               삭제
