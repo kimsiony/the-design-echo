@@ -103,7 +103,7 @@ function getRandomQuestions(book: string, count: number = 3): QuizQuestion[] {
 }
 
 export function QuizScreen({ reading, onBack }: QuizScreenProps) {
-  const [questions] = useState(() => getRandomQuestions(reading.book));
+  const [questions] = useState(() => pickQuestionsForReading(reading));
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState(0);
