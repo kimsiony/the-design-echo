@@ -11,10 +11,4 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
-  vite: {
-    base: '/Bible-Adventure/',  // export default defineConfig({
-  base: '/Bible-Adventure/',  // ← 이 줄 추가
-  plugins: [react()],
-})
-  },
 });

@@ -313,6 +313,7 @@ export const bibleSchedule: BibleReading[] = [
 ];
 
 const scheduleByDate = new Map(bibleSchedule.map((r) => [r.date, r]));
+const scheduleById = new Map(bibleSchedule.map((r) => [r.id, r]));
 
 function toIsoDate(d: Date): string {
   const y = d.getFullYear();
@@ -370,4 +371,9 @@ export function getMonthReadings(year: number, month: number): BibleReading[] {
 export function getDayOfYear(date: Date = new Date()): number {
   const r = scheduleByDate.get(toIsoDate(date));
   return r ? r.id : 0;
+}
+
+// Look up a scheduled reading by its id.
+export function getReadingById(id: number): BibleReading | undefined {
+  return scheduleById.get(id);
 }
